@@ -1,3 +1,7 @@
+if not writefile then
+    writefile = function() end
+end
+
 local WindUI
 
 do
@@ -14,27 +18,33 @@ do
     end
 end
 
--- Popup example
-local function createPopup()
-    return WindUI:Popup({
-        Title = "Welcome to the MB Hub!",
-        Icon = "bird",
-        Content = "Hello!",
+-- Startup Popup
+task.delay(0.5, function()
+    WindUI:Popup({
+        Title = "MB Hub",
+        Icon = "info",
+        Content = "Welcome to MB Hub!\n\nEnjoy the script 👋",
         Buttons = {
-            { Title = "Hahaha", Icon = "bird", Variant = "Tertiary" },
-            { Title = "Hahaha", Icon = "bird", Variant = "Tertiary" },
-            { Title = "Hahaha", Icon = "bird", Variant = "Tertiary" },
+            {
+                Title = "OK",
+                Icon = "check",
+                Variant = "Primary",
+                Callback = function()
+                    print("Welcome popup closed")
+                end
+            }
         }
     })
-end
+end)
 
--- Window
+-- Kreiranje Window
 local Window = WindUI:CreateWindow({
-    Title = "MB Hub  |  🖱️ Tap Simulator",
+    Title = "⚡ Ninja Legends | MB Hub | 🟢 Freemium",
+
     Folder = "MB Hub",
-    IconSize = 44,
     NewElements = true,
     HideSearchBar = false,
+
     OpenButton = {
         Title = "Open MB Hub UI",
         CornerRadius = UDim.new(1, 0),
@@ -47,11 +57,13 @@ local Window = WindUI:CreateWindow({
             Color3.fromHex("#e7ff2f")
         )
     },
+
     Topbar = {
         Height = 44,
-        ButtonsType = "Mac",
+        ButtonsType = "Default",
     },
 })
+
 
 -- Colors
 local Purple = Color3.fromHex("#7775F2")
@@ -200,7 +212,7 @@ do
         IconShape = "Square",
     })
 
-    -- First Dropdown: Islands
+    -- Islands Dropdown
     local locations = {
         ["Valley / Spawn"] = CFrame.new(95.0569992, 0.23999998, 30.1200008),
         ["Enchanted Island / 01"] = CFrame.new(25.5470886, 762.939575, -114.430298),
@@ -232,7 +244,7 @@ do
     end
 
     TeleportTab:Dropdown({
-        Title = "Teleport to Island",
+        Title = "Teleport to Normal Islands",
         Desc = "Select an island to teleport instantly",
         Values = islandNames,
         Value = "Valley / Spawn", -- Default
@@ -245,34 +257,64 @@ do
         end
     })
 
-    -- Second Dropdown: Ranks Island / Special Teleports
-    local ranksLocations = {
-        ["Valley / Spawn"] = CFrame.new(95.0569992, 0.23999998, 30.1200008),
-        ["Infinity Stats Dojo"] = CFrame.new(-4109.91553, 141.681931, -5908.68457, 0.939700544, 0, 0.341998369, 0, 1, 0, -0.341998369, 0, 0.939700544),
-        ["Altar Of Elements"] = CFrame.new(729.453125, 141.681931, -5902.17725, 0.984812498, -0, -0.173621148, 0, 1, -0, 0.173621148, 0, 0.984812498),
-        ["Eternal Boss"] = CFrame.new(1058.94324, 131.421234, -367.760651, -0.906296611, 0, 0.422642082, 0, 1, 0, -0.422642082, 0, -0.906296611),
-        ["Ancient Magma Boss"] = CFrame.new(262.444397, 131.421234, 1651.00073, -0.499959469, 0, 0.866048813, 0, 1, 0, -0.866048813, 0, -0.499959469),
-        ["Pet Cloning Altar"] = CFrame.new(4504.64258, 131.421234, 1374.43909, -0.906296611, 0, 0.422642082, 0, 1, 0, -0.422642082, 0, -0.906296611),
-        ["Light Karma"] = CFrame.new(5045.93359, 50.6967697, 1620.53271, 0.764139175, -0.644948423, 0.0115309358, -0.148046568, -0.1927495, -0.970015645, 0.627832472, 0.739519835, -0.242769957),
-    }
+local ranksLocations = {
+    ["Locked"] = CFrame.new(95.0569992, 0.23999998, 30.1200008),
+}
 
-    local ranksNames = {}
-    for name in pairs(ranksLocations) do
-        table.insert(ranksNames, name)
-    end
+local ranksNames = {}
+for name in pairs(ranksLocations) do
+    table.insert(ranksNames, name)
+end
 
-    TeleportTab:Dropdown({
-        Title = "Teleport to Ranks Island",
-        Desc = "Select an rank island to teleport instantly",
-        Values = ranksNames,
-        Value = "Valley / Spawn", -- Default
-        Callback = function(option)
-            local cf = ranksLocations[option]
-            if cf then
-                local hrp = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-                hrp.CFrame = cf
-            end
+TeleportTab:Dropdown({
+    Title = "Teleport to Ranks Island",
+    Desc = "Select a rank island to teleport instantly",
+    Values = ranksNames,
+    Value = "Locked",
+
+    Locked = true,                       -- 🔒 LOCK
+    LockedTitle = "Premium Only",        -- ✏️ custom text (3 riječi / bilo šta)
+
+    Callback = function(option)
+        local cf = ranksLocations[option]
+        if cf then
+            local hrp = game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+            hrp.CFrame = cf
         end
+    end
+})
+
+
+    -- Label + Discord Button
+    TeleportTab:Paragraph({
+        Title = "Ranks Island (6)",
+        Desc = "6 extra Ranks Islands are locked. Purchase Premium in the MB Hub Discord server to unlock them.",
+        Color = "White",
+        Locked = true,
+        Buttons = {
+            {
+                Icon = "share-2",
+                Title = "Copy Discord Link",
+                Callback = function()
+                    -- Copy Discord link to clipboard
+                    if setclipboard then
+                        setclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif toclipboard then
+                        toclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif syn and syn.write_clipboard then
+                        syn.write_clipboard("https://discord.gg/KFvcKdCnnj")
+                    end
+
+                    -- Simple notification
+                    WindUI:Notify({
+                        Title = "Success",
+                        Content = "Discord invite copied to clipboard!",
+                        Duration = 3,
+                        Icon = "clipboard"
+                    })
+                end
+            }
+        }
     })
 end
 
@@ -301,10 +343,11 @@ do
         IconShape = "Square",
     })
 
-
     PlayerTab:Button({
         Title = "Fly",
         Desc = "Enable fly mode",
+        Locked = true,
+        LockedTitle = "Premium only",
         Callback = function()
             loadstring(game:HttpGet(
                 "https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"
@@ -371,7 +414,6 @@ do
         end
     })
 
-
     local noclipConnection
     PlayerTab:Toggle({
         Title = "Noclip",
@@ -398,7 +440,6 @@ do
         end
     })
 
-
     local infJumpConnection
     PlayerTab:Toggle({
         Title = "Infinite Jump",
@@ -422,18 +463,50 @@ do
         end
     })
 
-
     PlayerTab:Button({
         Title = "ESP",
         Desc = "Enable player ESP",
         Locked = true,
+        LockedTitle = "Premium only",
         Callback = function()
             loadstring(game:HttpGet(
                 "https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP"
             ))()
         end
     })
-end
+
+    -- Label + Discord Button
+    PlayerTab:Paragraph({
+        Title = "Purchase Premium to unlock :",
+        Desc = "• Esp + Fly Gui",
+        Color = "White",
+        Locked = true,
+        Buttons = {
+            {
+                Icon = "share-2",
+                Title = "Copy Discord Link",
+                Callback = function()
+                    -- Copy Discord link to clipboard
+                    if setclipboard then
+                        setclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif toclipboard then
+                        toclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif syn and syn.write_clipboard then
+                        syn.write_clipboard("https://discord.gg/KFvcKdCnnj")
+                    end
+
+                    -- Simple notification
+                    WindUI:Notify({
+                        Title = "Success",
+                        Content = "Discord invite copied to clipboard!",
+                        Duration = 3,
+                        Icon = "clipboard"
+                    })
+                end
+            }
+        }
+    })
+end  -- <--- THIS END closes the initial 'do' block
 
 ----------------------------------------------------------------
 -- Auto Open TAB
@@ -444,7 +517,6 @@ do
         :WaitForChild("rEvents")
         :WaitForChild("checkChestRemote")
 
-    -- Chest list
     local Chests = {
         "Enchanted Chest",
         "Magma Chest",
@@ -465,9 +537,6 @@ do
 
     local selectedChest = Chests[1]
 
-    ----------------------------------------------------------------
-    -- tab info
-    ----------------------------------------------------------------
     local AutoOpenTab = Window:Tab({
         Title = "Auto Open",
         Icon = "solar:box-bold",
@@ -475,7 +544,6 @@ do
         IconShape = "Square",
     })
 
-    
     AutoOpenTab:Dropdown({
         Title = "Select Chest",
         Desc = "Choose a chest to open",
@@ -486,30 +554,57 @@ do
         end
     })
 
-    
     AutoOpenTab:Button({
         Title = "Open Selected Chest",
         Desc = "Open the chosen chest once",
         Callback = function()
-            if selectedChest then
-                chestRemote:InvokeServer(selectedChest)
-            end
+            chestRemote:InvokeServer(selectedChest)
         end
     })
 
-    
     AutoOpenTab:Button({
         Title = "Open ALL Chests",
-        Desc = "Open every chest once",
+        Desc = "Open every chest at the same time",
+        Locked = true,
+        LockedTitle = "Premium only",
         Callback = function()
             for _, chestName in ipairs(Chests) do
                 chestRemote:InvokeServer(chestName)
-                task.wait(0.2) -- safe delay
+                task.wait(0.2)
             end
         end
     })
-end
 
+    -- ✅ PARAGRAPH MORA BITI OVDJE
+    AutoOpenTab:Paragraph({
+        Title = "Purchase Premium to unlock :",
+        Desc = "• Open every chest at the same time",
+        Color = "White",
+        Locked = true,
+        Buttons = {
+            {
+                Icon = "share-2",
+                Title = "Copy Discord Link",
+                Callback = function()
+                    if setclipboard then
+                        setclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif toclipboard then
+                        toclipboard("https://discord.gg/KFvcKdCnnj")
+                    elseif syn and syn.write_clipboard then
+                        syn.write_clipboard("https://discord.gg/KFvcKdCnnj")
+                    end
+
+                    WindUI:Notify({
+                        Title = "Success",
+                        Content = "Discord invite copied to clipboard!",
+                        Duration = 3,
+                        Icon = "clipboard"
+                    })
+                end
+            }
+        }
+    })
+end
 
 ----------------------------------------------------------------
 -- Theme TAB (Colorpickers) 
@@ -651,3 +746,59 @@ do
         end
     })
 end
+
+-- Flag koji prati da li je popup otvoren
+local isDiscordPopupOpen = false
+
+-- Periodic Discord Popup
+task.spawn(function()
+    while true do
+        task.wait(240) -- 250 sec jednako 4 minuta
+
+        if not isDiscordPopupOpen then
+            isDiscordPopupOpen = true
+
+            WindUI:Popup({
+                Title = "Wanna Join Discord Server?",
+                Icon = "info",
+                Content = "We have big community and news on this server!\nWe also have key giveaways too. Thank you for all!",
+                Buttons = {
+                    {
+                        Title = "No Thanks",
+                        Callback = function()
+                            print("User declined Discord popup")
+                            isDiscordPopupOpen = false
+                        end,
+                        Variant = "Secondary",
+                    },
+                    {
+                        Title = "Sure!",
+                        Icon = "star",
+                        Callback = function()
+                            local invite = "https://discord.gg/KFvcKdCnnj"
+
+                            -- Copy to clipboard
+                            if setclipboard then
+                                setclipboard(invite)
+                            elseif toclipboard then
+                                toclipboard(invite)
+                            elseif syn and syn.write_clipboard then
+                                syn.write_clipboard(invite)
+                            end
+
+                            WindUI:Notify({
+                                Title = "Copied!",
+                                Content = "Discord invite copied to clipboard!",
+                                Duration = 3,
+                                Icon = "info"
+                            })
+
+                            isDiscordPopupOpen = false
+                        end,
+                        Variant = "Primary",
+                    }
+                }
+            })
+        end
+    end
+end)
